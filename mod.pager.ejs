@@ -1,0 +1,111 @@
+<%
+/**
+ * 分页
+ * Created by allenxu on 14-4-2.
+ **/
+%>
+<%
+    var pager = {
+        init: function(o){
+            var w = this;
+
+            w.start = o.start || 0;
+            w.limit = o.limit || 10;
+            w.total = o.total;
+            w.path = URL.parse(req.url).pathname;
+            w.param = URL.parse(req.url, true).query;
+        },
+
+        /**
+         * 第一页
+         */
+        first: function(){
+            var w = this;
+
+            return w.getUrl(0);
+        },
+
+        /**
+         * 上一页
+         */
+        prev: function(){
+            var w = this, start = w.start - w.limit;
+
+            return w.getUrl(start < 0 ? 0 : start);
+        },
+
+        /**
+         * 下一页
+         */
+        next: function(){
+            var w = this, start = w.start + w.limit;
+
+            return w.getUrl(start > w.total ? w.start : start);
+        },
+
+        /**
+         * 末页
+         */
+        last: function(){
+            var w = this;
+
+            return w.getUrl(Math.floor(w.total / w.limit) * w.limit);
+        },
+
+        /**
+         * 当前页码
+         */
+        pageNow: function(){
+            var w = this;
+
+            return Math.floor(w.start / w.limit) + 1;
+        },
+
+        /**
+         * 总页面
+         */
+        pageNum: function(){
+            var w = this;
+
+            return Math.ceil(w.total / w.limit);
+        },
+
+        /**
+         * 获得URL
+         */
+        getUrl: function(s, l){
+            var w = this, l = l || w.limit, arr = [];
+
+            w.param.start = s;
+            w.param.limit = l;
+
+            for(var i in w.param){
+                var str = '';
+
+                if(w.param[i].push){
+                    var parr = [];
+                    for(var j=0; j< w.param[i].length; j++){
+                        parr.push(i + '=' + w.param[i][j]);
+                    }
+                    arr.push(parr.join('&'));
+                }else{
+                    arr.push(i + '=' + w.param[i])
+                }
+            }
+
+            return w.path + '?' + arr.join('&');
+        }
+    }
+
+    pager.init({
+        start: parseInt(req.query.start),
+        limit: parseInt(req.query.limit),
+        total: total
+    })
+%>
+共<%= total %>条，<%= pager.pageNow() %> / <%= pager.pageNum() %> 页
+<a href="<%= pager.first() %>">首页</a>
+<a href="<%= pager.prev() %>">上一页</a>
+<a href="<%= pager.next() %>">下一页</a>
+<a href="<%= pager.last() %>">末页</a>
+
